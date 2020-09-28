@@ -1,0 +1,8 @@
+welcome: "Welcome to my calculator. Enter your name:"
+valid_name: "Make sure to use a valid name."
+number1: "Please type in a number:"
+valid_number: "Try again. That was not a valid number"
+number2: "Please type in a second number:"
+valid_operation: "Must choose 1, 2, 3 or 4"
+try_again?: "Do you want to perform another calculation? (Y to calculate again)"
+end: "Thank you for using my calculator"
