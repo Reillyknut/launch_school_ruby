@@ -29,7 +29,7 @@ loop do # start of main loop
     end
   end
 
-  prompt("Enter the annual percentage rate (in decimal form):")
+  prompt("Enter the annual interest rate (in decimal form, eg: 0.05 for 5%):")
   apr = ''
   loop do
     apr = gets.chomp
@@ -57,7 +57,10 @@ loop do # start of main loop
   month_interest = apr.to_f / 12
   prompt("Your monthly interest rate is #{month_interest.round(4) * 100}%")
 
-  month_pay = loan_amount.to_f * (month_interest / (1 - (1 + month_interest)**(-duration_months)))
+  month_pay = loan_amount.to_f * 
+              (month_interest / 
+              (1 - (1 + month_interest)**(-duration_months)))
+              
   prompt("Your monthly payment for this loan is $#{month_pay.round(2)}")
 
   prompt("Want to perform another calculation? (Y to calculate again)")
