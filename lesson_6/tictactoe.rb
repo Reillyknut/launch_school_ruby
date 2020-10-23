@@ -218,9 +218,13 @@ def display_round_win(board)
 end
 
 def play_again?
-  prompt "Play again? (y or n)"
-  answer = gets.chomp
-  answer.downcase.start_with?('y')
+  loop do
+    prompt "Play again? (y or n)"
+    answer = gets.chomp
+    return false if answer.downcase == 'n' || answer.downcase == 'no'
+    return true if answer.downcase == 'y' || answer.downcase == 'yes'
+    display_invalid_choice
+  end
 end
 
 def display_winner(winner)
