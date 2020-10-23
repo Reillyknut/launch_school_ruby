@@ -14,8 +14,16 @@ WINNING_LINES = [[1, 2, 3], [4, 5, 6], [7, 8, 9]] + # rows
 
 # -------------------------- # Methods # -------------------------- #
 
+def clear_screen
+  system 'clear'
+end
+
 def prompt(msg)
   puts "=> #{msg}"
+end
+
+def valid_number?(num)
+  num.to_i.to_s == num
 end
 
 def joinor(array, separator = ', ', word = 'or')
@@ -31,7 +39,7 @@ end
 
 # rubocop:disable Metrics/AbcSize, Metrics/MethodLength
 def display_board(brd)
-  system 'clear'
+  clear_screen
   puts "You are #{PLAYER_MARKER}. Computer is #{COMPUTER_MARKER}"
   puts "First to #{WINNING_SCORE} wins!"
   puts ""
@@ -69,11 +77,7 @@ def place_piece!(board, current_player)
 end
 
 def alternate_player(current_player)
-  if current_player == PLAYER
-    COMPUTER
-  elsif current_player == COMPUTER
-    PLAYER
-  end
+  current_player == PLAYER ? COMPUTER : PLAYER
 end
 
 def find_at_risk_square(line, board, marker)
@@ -83,23 +87,28 @@ def find_at_risk_square(line, board, marker)
 end
 
 def who_goes_first(first_move)
+  if first_move == 'Choose' then player_choose_move
+  elsif first_move == PLAYER then PLAYER
+  elsif first_move == COMPUTER then COMPUTER
+  end
+end
+
+def player_choose_move
   loop do
-    if first_move == 'Choose'
-      prompt "Would you like to go 1st or 2nd? (choose 1 or 2)"
-      choice = gets.chomp.to_i
-      case choice
+    prompt "Would you like to go 1st or 2nd? (choose 1 or 2)"
+    choice = gets.chomp
+    if valid_number?(choice) && (choice.to_i == 1 || choice.to_i == 2)
+      case choice.to_i
       when 1 then return PLAYER
       when 2 then return COMPUTER
-      else
-        invalid_choice
       end
-    elsif first_move == PLAYER then return PLAYER
-    elsif first_move == COMPUTER then return COMPUTER
+    else
+      display_invalid_choice
     end
   end
 end
 
-def invalid_choice
+def display_invalid_choice
   prompt "Sorry, that's not a valid choice."
 end
 
@@ -107,11 +116,12 @@ def player_places_piece!(brd)
   square = ''
   loop do
     prompt "Choose a square (#{joinor(empty_squares(brd))})"
-    square = gets.chomp.to_i
-    if empty_squares(brd).include?(square)
+    square = gets.chomp
+    if empty_squares(brd).include?(square.to_i) && valid_number?(square)
+      square = square.to_i
       break
     else
-      invalid_choice
+      display_invalid_choice
     end
   end
 
@@ -168,9 +178,9 @@ end
 
 def detect_winner(brd)
   WINNING_LINES.each do |line|
-    if brd.values_at(line[0], line[1], line[2]).count(PLAYER_MARKER) == 3
+    if brd.values_at(*line).count(PLAYER_MARKER) == 3
       return PLAYER
-    elsif brd.values_at(line[0], line[1], line[2]).count(COMPUTER_MARKER) == 3
+    elsif brd.values_at(*line).count(COMPUTER_MARKER) == 3
       return COMPUTER
     end
   end
@@ -199,7 +209,7 @@ def overall_winner(score)
   nil
 end
 
-def round_win_msg(board)
+def display_round_win(board)
   if someone_won?(board)
     prompt "#{detect_winner(board)} won!"
   else
@@ -213,21 +223,26 @@ def play_again?
   answer.downcase.start_with?('y')
 end
 
-def winner_msg(winner)
+def display_winner(winner)
   prompt "#{winner} wins!"
 end
 
-def next_round_msg
+def display_next_round
   prompt "Hit Enter to play next round."
   gets.chomp
 end
 
-def goodbye_msg
+def display_goodbye
   prompt "Thanks for playing Tic-Tac-Toe! Goodbye."
 end
 
-# -------------------------- # Game loop # -------------------------- #
+def display_welcome
+  prompt "Welcome to Tic-Tac-Toe!"
+end
 
+# -------------------------- # Game loop # -------------------------- #
+clear_screen
+display_welcome
 loop do
   score = initialize_scoreboard
   loop do
@@ -247,16 +262,16 @@ loop do
     winner = overall_winner(score)
 
     if winner == PLAYER || winner == COMPUTER
-      winner_msg(winner)
+      display_winner(winner)
       display_score(score)
       break
     end
 
-    round_win_msg(board)
+    display_round_win(board)
     display_score(score)
-    next_round_msg
+    display_next_round
   end
 
   break unless play_again?
 end
-goodbye_msg
+display_goodbye
