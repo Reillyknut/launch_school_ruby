@@ -152,7 +152,7 @@ end
 
 def display_next_round
   prompt "Hit Enter to play next round."
-  gets.chomp
+  gets
 end
 
 def display_score(score)
@@ -175,7 +175,8 @@ end
 
 def press_enter_to_start
   prompt "Press Enter to deal cards"
-  gets.chomp
+  gets
+  clear_screen
 end
 
 def initialize_scoreboard
@@ -208,6 +209,18 @@ def short_pause
   sleep 2
 end
 
+def valid_answer?(answer)
+  (answer == 'hit' || answer == 'h') || (answer == 'stay' || answer == 's')
+end
+
+def hit?(answer)
+  answer == 'hit' || answer == 'h'
+end
+
+def stay?(answer)
+  answer == 'stay' || answer == 's'
+end
+
 # ------------------------------ # Game Loop # ------------------------------ #
 clear_screen
 display_welcome
@@ -236,20 +249,18 @@ loop do
       display_hit_or_stay
       answer = gets.chomp.downcase
 
-      if answer == 'hit' || answer == 'stay'
-        if answer == 'hit'
+      if valid_answer?(answer)
+        if hit?(answer)
           deal_card(deck, player_hand)
           display_card(player_hand.last)
           player_total = hand_value(player_hand)
           display_values(player_total, nil)
-
           if busted?(player_total)
             prompt "Busted! Dealer wins."
-            puts ""
             break
           end
-
-        elsif answer == 'stay' then break
+        elsif stay?(answer)
+          break
         end
       else
         display_invalid_choice
