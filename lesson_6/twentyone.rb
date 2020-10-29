@@ -1,3 +1,4 @@
+require 'pry'
 # ------------------------------ # Constants # ------------------------------ #
 FULL_DECK = {
   Hearts: [2, 3, 4, 5, 6, 7, 8, 9, 10, 'Jack', 'Queen', 'King', 'Ace'],
@@ -134,15 +135,23 @@ def display_first_dealer_value(dealer_hand)
   prompt "Visible dealer value: #{value}"
 end
 
-def display_round_winner(player_total, dealer_total)
-  if !busted?(player_total) && !busted?(dealer_total)
-    if player_total > dealer_total
-      prompt "Player wins!"
-    elsif player_total < dealer_total
-      prompt "Dealer wins!"
-    else
-      prompt "It's a tie!"
-    end
+# def display_round_winner(player_total, dealer_total)
+#   if !busted?(player_total) && !busted?(dealer_total)
+#     if player_total > dealer_total
+#       prompt "Player wins!"
+#     elsif player_total < dealer_total
+#       prompt "Dealer wins!"
+#     else
+#       prompt "It's a tie!"
+#     end
+#   end
+# end
+
+def display_round_winner(winner)
+  if winner
+    prompt "#{winner} wins!"
+  else
+    prompt "It's a tie!"
   end
 end
 
@@ -221,6 +230,55 @@ def stay?(answer)
   answer == 'stay' || answer == 's'
 end
 
+def player_turn(deck, player_hand, player_total)
+  loop do
+    display_hit_or_stay
+    answer = gets.chomp.downcase
+    if valid_answer?(answer)
+      if hit?(answer)
+        hit(deck, player_hand)
+        player_total = hand_value(player_hand)
+        display_values(player_total, nil)
+        if busted?(player_total)
+          prompt "Busted! Dealer wins."
+          break
+        end
+      elsif stay?(answer) then break end
+    else display_invalid_choice end
+  end
+end
+
+def dealer_turn(deck, player_total, dealer_hand, dealer_total)
+  unless busted?(player_total)
+    display_second_dealer_card(dealer_hand, dealer_total)
+    loop do
+      prompt dealer_action(dealer_total)
+      break if dealer_action(dealer_total) == "Dealer busted! Player wins." ||
+               dealer_action(dealer_total) == "Dealer stays."
+      hit(deck, dealer_hand)
+      dealer_total = hand_value(dealer_hand)
+      display_values(nil, dealer_total)
+      puts ""
+      short_pause # short pause for readability
+    end
+  end
+end
+
+def dealer_action(dealer_total)
+  if busted?(dealer_total)
+    "Dealer busted! Player wins."
+  elsif dealer_total >= DEALER_MAX
+    "Dealer stays."
+  else
+    "Dealer hits."
+  end
+end
+
+def hit(deck, player_dealer_hand)
+  deal_card(deck, player_dealer_hand)
+  display_card(player_dealer_hand.last)
+end
+
 # ------------------------------ # Game Loop # ------------------------------ #
 clear_screen
 display_welcome
@@ -238,58 +296,23 @@ loop do
 
     deal_initial_cards(deck, player_hand, dealer_hand)
     display_initial_hands(player_hand, dealer_hand)
-
     player_total = hand_value(player_hand)
     dealer_total = hand_value(dealer_hand)
 
     display_values(player_total, nil)
     display_first_dealer_value(dealer_hand)
 
-    loop do # player loop
-      display_hit_or_stay
-      answer = gets.chomp.downcase
-
-      if valid_answer?(answer)
-        if hit?(answer)
-          deal_card(deck, player_hand)
-          display_card(player_hand.last)
-          player_total = hand_value(player_hand)
-          display_values(player_total, nil)
-          if busted?(player_total)
-            prompt "Busted! Dealer wins."
-            break
-          end
-        elsif stay?(answer)
-          break
-        end
-      else
-        display_invalid_choice
-      end
-    end
-
-    unless busted?(player_total) # dealer loop
-      display_second_dealer_card(dealer_hand, dealer_total)
-      loop do
-        if busted?(dealer_total)
-          prompt "Dealer busted! Player wins."
-          break
-        elsif dealer_total >= DEALER_MAX
-          prompt "Dealer stays."
-          break
-        else
-          prompt "Dealer hits."
-          deal_card(deck, dealer_hand)
-          display_card(dealer_hand.last)
-          dealer_total = hand_value(dealer_hand)
-          display_values(nil, dealer_total)
-          puts ""
-          short_pause # short pause for readability
-        end
-      end
-    end
+    player_turn(deck, player_hand, player_total)
+    player_total = hand_value(player_hand)
+    dealer_turn(deck, player_total, dealer_hand, dealer_total)
+    dealer_total = hand_value(dealer_hand)
 
     display_values(player_total, dealer_total)
-    display_round_winner(player_total, dealer_total)
+
+    if !busted?(player_total) && !busted?(dealer_total)
+      display_round_winner(detect_winner(player_total, dealer_total))
+    end
+
     display_full_hands(player_hand, dealer_hand)
     update_score(detect_winner(player_total, dealer_total), score)
 
