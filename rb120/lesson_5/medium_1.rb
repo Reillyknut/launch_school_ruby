@@ -586,9 +586,23 @@ class PokerHand
   end
 
   def four_of_a_kind?
+    cards.any? do |card|
+      cards.count(card) == 4
+    end
   end
 
   def full_house?
+    card_count = {}
+    cards.each do |card|
+      if card_count.include?(card.value)
+        card_count[card.value] += 1
+      else
+        card_count[card.value] = 1
+      end
+    end
+
+    card_count = card_count.values.sort
+    card_count[0] == 2 && card_count[1] == 3
   end
 
   def flush? # try the (:&) format
@@ -613,6 +627,16 @@ class PokerHand
   end
 
   def two_pair?
+    card_count = {}
+    cards.each do |card|
+      if card_count.include?(card.value)
+        card_count[card.value] += 1
+      else
+        card_count[card.value] = 1
+      end
+    end
+
+    card_count.count { |_, v| v == 2 } == 2
   end
 
   def pair?
@@ -648,23 +672,23 @@ hand = PokerHand.new([
 ])
 puts hand.evaluate == 'Straight flush'
 
-# hand = PokerHand.new([
-#   Card.new(3, 'Hearts'),
-#   Card.new(3, 'Clubs'),
-#   Card.new(5, 'Diamonds'),
-#   Card.new(3, 'Spades'),
-#   Card.new(3, 'Diamonds')
-# ])
-# puts hand.evaluate == 'Four of a kind'
+hand = PokerHand.new([
+  Card.new(3, 'Hearts'),
+  Card.new(3, 'Clubs'),
+  Card.new(5, 'Diamonds'),
+  Card.new(3, 'Spades'),
+  Card.new(3, 'Diamonds')
+])
+puts hand.evaluate == 'Four of a kind'
 
-# hand = PokerHand.new([
-#   Card.new(3, 'Hearts'),
-#   Card.new(3, 'Clubs'),
-#   Card.new(5, 'Diamonds'),
-#   Card.new(3, 'Spades'),
-#   Card.new(5, 'Hearts')
-# ])
-# puts hand.evaluate == 'Full house'
+hand = PokerHand.new([
+  Card.new(3, 'Hearts'),
+  Card.new(3, 'Clubs'),
+  Card.new(5, 'Diamonds'),
+  Card.new(3, 'Spades'),
+  Card.new(5, 'Hearts')
+])
+puts hand.evaluate == 'Full house'
 
 hand = PokerHand.new([
   Card.new(10, 'Hearts'),
@@ -702,14 +726,14 @@ hand = PokerHand.new([
 ])
 puts hand.evaluate == 'Three of a kind'
 
-# hand = PokerHand.new([
-#   Card.new(9, 'Hearts'),
-#   Card.new(9, 'Clubs'),
-#   Card.new(5, 'Diamonds'),
-#   Card.new(8, 'Spades'),
-#   Card.new(5, 'Hearts')
-# ])
-# puts hand.evaluate == 'Two pair'
+hand = PokerHand.new([
+  Card.new(9, 'Hearts'),
+  Card.new(9, 'Clubs'),
+  Card.new(5, 'Diamonds'),
+  Card.new(8, 'Spades'),
+  Card.new(5, 'Hearts')
+])
+puts hand.evaluate == 'Two pair'
 
 hand = PokerHand.new([
   Card.new(2, 'Hearts'),
@@ -728,3 +752,8 @@ hand = PokerHand.new([
   Card.new(3,      'Diamonds')
 ])
 puts hand.evaluate == 'High card'
+
+
+
+
+
